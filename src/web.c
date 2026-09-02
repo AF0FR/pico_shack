@@ -205,8 +205,8 @@ bool web_init(void)
                      &gateway, &netmask);
     dns_server_init(&dns_server, &cyw43_state.netif[CYW43_ITF_AP], &gateway);
     mdns_resp_init();
-    mdns_resp_add_netif(&cyw43_state.netif[CYW43_ITF_AP], "picofox");
-    mdns_resp_add_service(&cyw43_state.netif[CYW43_ITF_AP], "PicoFox", "_http",
+    mdns_resp_add_netif(&cyw43_state.netif[CYW43_ITF_AP], "picoshack");
+    mdns_resp_add_service(&cyw43_state.netif[CYW43_ITF_AP], "PicoShack", "_http",
                           DNSSD_PROTO_TCP, 80, mdns_http_txt, NULL);
     httpd_init();
     http_set_cgi_handlers(cgi_handlers, LWIP_ARRAYSIZE(cgi_handlers));

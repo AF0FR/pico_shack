@@ -20,7 +20,7 @@ endif()
 
 include(pico_sdk_import.cmake)
 
-project(PicoFox C CXX ASM)
+project(PicoShack C CXX ASM)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
@@ -38,7 +38,7 @@ if (NOT pico_examples_POPULATED)
     FetchContent_Populate(pico_examples)
 endif()
 
-add_executable(PicoFox
+add_executable(PicoShack
     src/main.c
     src/audio.c
     src/fox.c
@@ -55,14 +55,14 @@ add_executable(PicoFox
     ${pico_examples_SOURCE_DIR}/pico_w/wifi/access_point/dnsserver/dnsserver.c
 )
 
-target_include_directories(PicoFox PRIVATE
+target_include_directories(PicoShack PRIVATE
     src
     ${pico_examples_SOURCE_DIR}/pico_w/wifi/access_point/dhcpserver
     ${pico_examples_SOURCE_DIR}/pico_w/wifi/access_point/dnsserver
     ${PICO_LWIP_CONTRIB_PATH}/apps/httpd
 )
 
-target_link_libraries(PicoFox PRIVATE
+target_link_libraries(PicoShack PRIVATE
     pico_stdlib
     hardware_clocks
     hardware_flash
@@ -74,16 +74,16 @@ target_link_libraries(PicoFox PRIVATE
     pico_lwip_mdns
 )
 
-pico_configure_ip4_address(PicoFox PRIVATE CYW43_DEFAULT_IP_AP_ADDRESS 192.168.4.1)
+pico_configure_ip4_address(PicoShack PRIVATE CYW43_DEFAULT_IP_AP_ADDRESS 192.168.4.1)
 
-pico_add_library(PicoFoxWebContent NOFLAG)
-pico_set_lwip_httpd_content(PicoFoxWebContent INTERFACE
+pico_add_library(PicoShackWebContent NOFLAG)
+pico_set_lwip_httpd_content(PicoShackWebContent INTERFACE
     ${CMAKE_CURRENT_LIST_DIR}/web/apply-complete.html
     ${CMAKE_CURRENT_LIST_DIR}/web/cw-settings.shtml
     ${CMAKE_CURRENT_LIST_DIR}/web/cw.shtml
     ${CMAKE_CURRENT_LIST_DIR}/web/cw-apply-complete.html
     ${CMAKE_CURRENT_LIST_DIR}/web/device-apply-complete.html
-    ${CMAKE_CURRENT_LIST_DIR}/web/picofox.css
+    ${CMAKE_CURRENT_LIST_DIR}/web/picoshack.css
     ${CMAKE_CURRENT_LIST_DIR}/web/index.shtml
     ${CMAKE_CURRENT_LIST_DIR}/web/fox.shtml
     ${CMAKE_CURRENT_LIST_DIR}/web/fox-settings.shtml
@@ -92,8 +92,8 @@ pico_set_lwip_httpd_content(PicoFoxWebContent INTERFACE
     ${CMAKE_CURRENT_LIST_DIR}/web/settings.shtml
     ${CMAKE_CURRENT_LIST_DIR}/web/status.shtml
 )
-target_link_libraries(PicoFox PRIVATE PicoFoxWebContent)
+target_link_libraries(PicoShack PRIVATE PicoShackWebContent)
 
-pico_enable_stdio_usb(PicoFox 1)
-pico_enable_stdio_uart(PicoFox 0)
-pico_add_extra_outputs(PicoFox)
+pico_enable_stdio_usb(PicoShack 1)
+pico_enable_stdio_uart(PicoShack 0)
+pico_add_extra_outputs(PicoShack)

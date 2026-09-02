@@ -12,6 +12,17 @@
 
 static uint audio_slice;
 static uint audio_channel;
+static uint16_t audio_target_level;
+static bool audio_active;
+
+// Half-cosine amplitude values from 0 to 1, sampled at 1 ms intervals.
+static const uint16_t envelope[6] = {0u, 6259u, 22641u, 42894u, 59276u, 65535u};
+
+static void set_envelope_level(uint16_t scale)
+{
+    pwm_set_chan_level(audio_slice, audio_channel,
+                       ((uint32_t)audio_target_level * scale) / 65535u);
+}
 
 void audio_init(void)
 {
@@ -19,6 +30,7 @@ void audio_init(void)
     audio_slice = pwm_gpio_to_slice_num(AUDIO_PIN);
     audio_channel = pwm_gpio_to_channel(AUDIO_PIN);
     pwm_set_enabled(audio_slice, false);
+    audio_active = false;
 }
 
 void audio_start_tone(uint32_t frequency_hz)
@@ -29,22 +41,40 @@ void audio_start_tone(uint32_t frequency_hz)
     const float divider = (float)clock_get_hz(clk_sys) /
                           ((float)frequency_hz * (float)(wrap + 1u));
 
+    audio_target_level = (uint16_t)(((uint32_t)(wrap + 1u) *
+                                    settings.audio_gain_percent) / 200u);
+    if (audio_active) {
+        pwm_set_clkdiv(audio_slice, divider);
+        return;
+    }
+
     pwm_set_enabled(audio_slice, false);
     pwm_set_clkdiv(audio_slice, divider);
     pwm_set_wrap(audio_slice, wrap);
-    pwm_set_chan_level(audio_slice, audio_channel,
-                       ((uint32_t)(wrap + 1u) * settings.audio_gain_percent) / 200u);
+    pwm_set_chan_level(audio_slice, audio_channel, 0u);
     pwm_set_counter(audio_slice, 0u);
     pwm_set_enabled(audio_slice, true);
+    audio_active = true;
+    for (uint i = 1u; i <= AUDIO_ENVELOPE_MS; ++i) {
+        set_envelope_level(envelope[i]);
+        sleep_ms(1);
+    }
 }
 
 void audio_stop(void)
 {
+    if (audio_active) {
+        for (int i = (int)AUDIO_ENVELOPE_MS - 1; i >= 0; --i) {
+            set_envelope_level(envelope[i]);
+            sleep_ms(1);
+        }
+    }
     pwm_set_enabled(audio_slice, false);
     gpio_set_function(AUDIO_PIN, GPIO_FUNC_SIO);
     gpio_set_dir(AUDIO_PIN, GPIO_OUT);
     gpio_put(AUDIO_PIN, 0);
     gpio_set_function(AUDIO_PIN, GPIO_FUNC_PWM);
+    audio_active = false;
 }
 
 void audio_play_warble(void)

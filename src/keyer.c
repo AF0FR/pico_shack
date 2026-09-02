@@ -76,7 +76,10 @@ static void paddle_key(const fox_settings_t *s, bool initial_dit, bool initial_d
         bool send_dah = dit_memory && dah_memory ? !last_dah : dah_memory;
         if (send_dah) dah_memory = false; else dit_memory = false;
         audio_start_tone(s->cw_tone_hz);
-        wait_keys(send_dah ? 3u * dit_ms : dit_ms, s, &dit_memory, &dah_memory);
+        const uint32_t element_ms = send_dah ? 3u * dit_ms : dit_ms;
+        const uint32_t ramp_ms = 2u * AUDIO_ENVELOPE_MS;
+        wait_keys(element_ms > ramp_ms ? element_ms - ramp_ms : 0u,
+                  s, &dit_memory, &dah_memory);
         audio_stop();
         wait_keys(dit_ms, s, &dit_memory, &dah_memory);
         last_dah = send_dah;

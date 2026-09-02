@@ -47,7 +47,9 @@ static void send_character(const char *pattern, uint32_t dit_ms, uint32_t tone_h
             return;
         }
         audio_start_tone(tone_hz);
-        sleep_ms(pattern[i] == '-' ? 3u * dit_ms : dit_ms);
+        const uint32_t element_ms = pattern[i] == '-' ? 3u * dit_ms : dit_ms;
+        const uint32_t ramp_ms = 2u * AUDIO_ENVELOPE_MS;
+        sleep_ms(element_ms > ramp_ms ? element_ms - ramp_ms : 0u);
         audio_stop();
 
         if (pattern[i + 1] != '\0') {

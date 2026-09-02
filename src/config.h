@@ -18,8 +18,8 @@
 #define KEEP_ALIVE_PERIOD_MS    5000u
 
 // Pico 2 W access point. WPA2 passwords must contain at least 8 characters.
-#define WIFI_AP_SSID     "PicoFox"
-#define WIFI_AP_PASSWORD "picofox1"
+#define WIFI_AP_SSID     "PicoShack"
+#define WIFI_AP_PASSWORD "picoshack1"
 
 // Set to 0 if the PTT interface is active-low at the Pico GPIO.
 #define PTT_ACTIVE_LEVEL 1
