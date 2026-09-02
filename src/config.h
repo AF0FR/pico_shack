@@ -25,12 +25,12 @@
 #define PTT_ACTIVE_LEVEL 1
 
 // Morse settings.
-#define CW_WPM     18u
+#define CW_WPM     15u
 #define CW_TONE_HZ 500u
 #define AUDIO_GAIN_PERCENT 50u
 
 #define OPERATING_MODE_DEFAULT 0u
-#define KEYER_MODE_DEFAULT     0u
+#define KEYER_MODE_DEFAULT     1u
 #define KEYER_REVERSED_DEFAULT 0u
 #define KEYER_HANG_MS_DEFAULT  500u
 

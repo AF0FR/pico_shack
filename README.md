@@ -15,7 +15,7 @@ load is enabled for 1 second every 5 seconds, independently of the fox cycle.
 
 The repeating sequence is:
 
-1. `FOX` in Morse at 18 WPM, then 1 second off air
+1. `FOX` in Morse at 15 WPM, then 1 second off air
 2. 300/800 Hz warble for 5 seconds, then 5 seconds off air
 3. `FOX` in Morse, then 1 second off air
 4. 300-800-300 Hz sweep for 5 seconds, then 5 seconds off air
