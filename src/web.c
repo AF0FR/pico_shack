@@ -68,11 +68,13 @@ static const char *mode_handler(int index, int count, char *names[], char *value
 {
     (void)index;
     const char *mode = parameter_value(count, names, values, "mode");
-    if (mode != NULL && (strcmp(mode, "0") == 0 || strcmp(mode, "1") == 0)) {
+    if (mode != NULL && (strcmp(mode, "0") == 0 || strcmp(mode, "1") == 0 ||
+                         strcmp(mode, "2") == 0)) {
         fox_settings_t settings;
         settings_get(&settings);
         settings.operating_mode = (uint8_t)(mode[0] - '0');
         settings_set(&settings);
+        station_control_set_manual_mode(settings.operating_mode == 1u);
         keyer_release_web_keys();
     }
     return "/key-state.txt";
@@ -104,7 +106,7 @@ static const char *ssi_tags[] = {
     "txstatus", "startdis", "stopdis", "step", "stepid", "savecls", "savemsg",
     "did", "dssid", "dpass", "dka", "dwpm", "dcw", "dgain", "dwl", "dwh",
     "dws", "dwd", "dsl", "dsh", "dss", "dsm", "dsd", "dfp", "dtp", "didle"
-    , "mode", "keymode", "rev", "hang", "modename"
+    , "mode", "keymode", "rev", "hang", "modename", "startup"
 };
 
 static u16_t ssi_handler(int index, char *output, int output_length)
@@ -173,7 +175,10 @@ static u16_t ssi_handler(int index, char *output, int output_length)
         case 45: return (u16_t)snprintf(output, output_length, "%u", s.keyer_mode);
         case 46: return (u16_t)snprintf(output, output_length, "%s", s.keyer_reversed ? "checked" : "");
         case 47: return (u16_t)snprintf(output, output_length, "%u", s.keyer_hang_ms);
-        case 48: return (u16_t)snprintf(output, output_length, "%s", s.operating_mode ? "PicoCW" : "PicoFox");
+        case 48: return (u16_t)snprintf(output, output_length, "%s",
+                                        s.operating_mode == 0u ? "PicoFox" :
+                                        s.operating_mode == 1u ? "PicoCW" : "Standby");
+        case 49: return (u16_t)snprintf(output, output_length, "%u", s.startup_feature);
         default: return 0;
     }
 }

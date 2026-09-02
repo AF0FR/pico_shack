@@ -1,14 +1,13 @@
-# PicoFox
+# PicoShack
 
-PicoFox is a Raspberry Pi Pico 2 W audio fox controller for an FM radio. It
-keys PTT on GP0 and generates adjustable PWM tone audio on GP1. The Pico 2 W
-also hosts its own Wi-Fi access point and phone-friendly configuration page.
+PicoShack is an extensible amateur-radio automation toolkit for the Raspberry
+Pi Pico 2 W. It keys PTT on GP0, generates adjustable PWM audio on GP1, and
+hosts its own Wi-Fi access point and phone-friendly control application.
 
-The firmware has two selectable operating modes. **PicoFox** runs the
+The firmware currently has two selectable features. **PicoFox** runs the
 automatic transmitter sequence described below. **PicoCW** is a manual MCW
-keyer using GP2 and GP3 for a straight key or DIT/DAH paddles. The repository
-and firmware artifact retain the PicoFox name until the planned PicoTone
-project rename.
+keyer using GP2 and GP3 for a straight key or DIT/DAH paddles. The architecture
+is designed to accommodate additional PicoShack radio tools.
 
 It also pulses an external dummy load through a switch on GP4 for USB power
 banks that shut down when the Pico's current draw is too low. By default the
@@ -34,17 +33,21 @@ gain can be adjusted from the web page while the unit is running.
    mDNS, use `http://192.168.4.1` as a fallback.
 5. Adjust the settings and select **Apply settings**.
 
-The Dashboard has PicoFox and PicoCW feature buttons. PicoFox shows the live
-sequence, Start/Stop controls, and a muted-by-default browser monitor. PicoCW
-shows a single straight-key control or separate DIT/DAH controls according to
-the selected key type; holding a web control operates the same MCW keyer as
-the physical inputs. A header menu links the Dashboard, PicoFox settings, and
-PicoCW settings pages.
+Home shows the active feature without changing it and links to dedicated
+PicoFox and PicoCW operating pages. Feature changes are explicit. PicoFox shows
+the live sequence, Start/Stop controls, and a muted-by-default browser monitor.
+PicoCW shows a straight-key control or separate DIT/DAH controls according to
+the selected key type, along with its current mode, speed, and tone. PicoCW is
+ready whenever selected; holding a web control or the left/right arrow keys
+operates the same MCW keyer as the physical inputs. Device settings select
+PicoFox, PicoCW, or standby as the independently persisted power-up feature.
 
-The page controls the station ID, CW speed and frequency, output gain, warble,
-sweep, off-air intervals, and whether the USB power-bank dummy load is active.
-Disabling it turns GP4 off immediately. Changes apply at the next appropriate
-sequence stage and are saved to flash during the next off-air pause. They are restored
+Settings are divided by ownership. Device settings control the startup feature,
+Wi-Fi access point, USB power-bank dummy load, factory reset, and reboot.
+PicoFox settings control the station ID, sequence audio, and pauses; PicoCW
+settings control its key input and MCW behavior. Disabling the dummy load turns
+GP4 off immediately. Changes apply at the next appropriate sequence stage and are saved
+to flash during the next off-air pause. They are restored
 after power cycles. The defaults in `config.h` are used when no valid saved
 record exists, including on the first boot. Change `WIFI_AP_SSID` and
 `WIFI_AP_PASSWORD` in `config.h` before building if different access-point

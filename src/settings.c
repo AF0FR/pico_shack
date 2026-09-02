@@ -15,7 +15,7 @@ static fox_settings_t current_settings;
 static bool settings_dirty;
 
 #define SETTINGS_MAGIC   0x50465832u  // "PFX2"
-#define SETTINGS_VERSION 6u
+#define SETTINGS_VERSION 7u
 #define SETTINGS_FLASH_OFFSET (PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE)
 
 typedef struct {
@@ -104,6 +104,7 @@ void settings_get_defaults(fox_settings_t *destination)
         .keep_alive_enabled = KEEP_ALIVE_ENABLED,
         .transmit_enabled = 1u,
         .operating_mode = OPERATING_MODE_DEFAULT,
+        .startup_feature = OPERATING_MODE_DEFAULT,
         .keyer_mode = KEYER_MODE_DEFAULT,
         .keyer_reversed = KEYER_REVERSED_DEFAULT,
         .keyer_hang_ms = KEYER_HANG_MS_DEFAULT,
@@ -131,7 +132,7 @@ settings_validation_t settings_validate(const fox_settings_t *s)
     if (!valid_wifi_ssid(s->wifi_ssid)) return SETTINGS_ERROR_WIFI_SSID;
     if (!valid_wifi_text(s->wifi_password, 8u, WIFI_PASSWORD_MAX_LENGTH)) return SETTINGS_ERROR_WIFI_PASSWORD;
     if (s->keep_alive_enabled > 1u || s->transmit_enabled > 1u) return SETTINGS_ERROR_FLAGS;
-    if (s->operating_mode > 1u) return SETTINGS_ERROR_MODE;
+    if (s->operating_mode > 2u || s->startup_feature > 2u) return SETTINGS_ERROR_MODE;
     if (s->keyer_mode > 2u || s->keyer_reversed > 1u) return SETTINGS_ERROR_KEYER_MODE;
     if (s->keyer_hang_ms > 5000u) return SETTINGS_ERROR_KEYER_HANG;
     if (s->cw_wpm < 5 || s->cw_wpm > 40) return SETTINGS_ERROR_CW_WPM;
@@ -192,6 +193,9 @@ void settings_init(void)
         settings_validate(&saved->payload) == SETTINGS_VALID) {
         current_settings = saved->payload;
     }
+    // The active feature is runtime state; each boot begins with the separately
+    // configured startup feature.
+    current_settings.operating_mode = current_settings.startup_feature;
 }
 
 void settings_get(fox_settings_t *destination)

@@ -53,7 +53,9 @@ static const char *save_handler(int count, char *names[], char *values[])
 {
     const char *return_page = parameter_value(count, names, values, "return");
     const char *complete_page = return_page != NULL && strcmp(return_page, "cw") == 0 ?
-        "/cw-apply-complete.html" : "/apply-complete.html";
+        "/cw-apply-complete.html" :
+        return_page != NULL && strcmp(return_page, "device") == 0 ?
+        "/device-apply-complete.html" : "/apply-complete.html";
     fox_settings_t settings;
     settings_get(&settings);
 
@@ -75,6 +77,8 @@ static const char *save_handler(int count, char *names[], char *values[])
     }
     const char *mode = parameter_value(count, names, values, "mode");
     if (mode != NULL) settings.operating_mode = (uint8_t)strtoul(mode, NULL, 10);
+    const char *startup = parameter_value(count, names, values, "startup");
+    if (startup != NULL) settings.startup_feature = (uint8_t)strtoul(startup, NULL, 10);
     const char *keyer_mode = parameter_value(count, names, values, "keymode");
     if (keyer_mode != NULL) settings.keyer_mode = (uint8_t)strtoul(keyer_mode, NULL, 10);
     if (parameter_value(count, names, values, "revp") != NULL) {

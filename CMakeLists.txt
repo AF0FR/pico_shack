@@ -80,9 +80,13 @@ pico_add_library(PicoFoxWebContent NOFLAG)
 pico_set_lwip_httpd_content(PicoFoxWebContent INTERFACE
     ${CMAKE_CURRENT_LIST_DIR}/web/apply-complete.html
     ${CMAKE_CURRENT_LIST_DIR}/web/cw-settings.shtml
+    ${CMAKE_CURRENT_LIST_DIR}/web/cw.shtml
     ${CMAKE_CURRENT_LIST_DIR}/web/cw-apply-complete.html
+    ${CMAKE_CURRENT_LIST_DIR}/web/device-apply-complete.html
     ${CMAKE_CURRENT_LIST_DIR}/web/picofox.css
     ${CMAKE_CURRENT_LIST_DIR}/web/index.shtml
+    ${CMAKE_CURRENT_LIST_DIR}/web/fox.shtml
+    ${CMAKE_CURRENT_LIST_DIR}/web/fox-settings.shtml
     ${CMAKE_CURRENT_LIST_DIR}/web/key-state.txt
     ${CMAKE_CURRENT_LIST_DIR}/web/reboot.shtml
     ${CMAKE_CURRENT_LIST_DIR}/web/settings.shtml

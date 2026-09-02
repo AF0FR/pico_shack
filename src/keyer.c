@@ -100,13 +100,6 @@ void keyer_run(void)
         radio_ptt_off();
         station_control_complete_stop();
     }
-    if (!station_control_is_enabled()) {
-        radio_force_ptt_off();
-        settings_save_if_dirty();
-        sleep_ms(5);
-        return;
-    }
-
     bool dit, dah;
     read_keys(&s, &dit, &dah);
     if (!dit && !dah) {

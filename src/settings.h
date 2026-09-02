@@ -14,6 +14,7 @@ typedef struct {
     uint8_t keep_alive_enabled;
     uint8_t transmit_enabled;
     uint8_t operating_mode;
+    uint8_t startup_feature;
     uint8_t keyer_mode;
     uint8_t keyer_reversed;
     uint16_t keyer_hang_ms;

@@ -13,6 +13,7 @@
 #define BOOTSEL_DEBOUNCE_TICKS 3u
 
 static volatile bool transmit_enabled;
+static volatile bool manual_mode;
 static volatile bool stop_requested;
 static volatile bool stop_id_active;
 static struct repeating_timer bootsel_timer;
@@ -56,9 +57,14 @@ void station_control_set_enabled(bool enabled)
     }
 }
 
+void station_control_set_manual_mode(bool enabled)
+{
+    manual_mode = enabled;
+}
+
 bool station_control_transmission_allowed(void)
 {
-    return transmit_enabled && (!stop_requested || stop_id_active);
+    return manual_mode || (transmit_enabled && (!stop_requested || stop_id_active));
 }
 
 bool station_control_stop_requested(void)
@@ -112,6 +118,7 @@ void station_control_init(void)
     fox_settings_t settings;
     settings_get(&settings);
     transmit_enabled = settings.transmit_enabled != 0u;
+    manual_mode = settings.operating_mode == 1u;
     stop_requested = false;
     stop_id_active = false;
     add_repeating_timer_ms(-(int32_t)BOOTSEL_POLL_MS, bootsel_poll_callback,
