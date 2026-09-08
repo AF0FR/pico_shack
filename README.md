@@ -103,6 +103,11 @@ stable for roughly 75 ms, and the command digit must follow `*` within three
 seconds. The prefix reduces accidental activation from ordinary receiver
 audio; it is not an authentication mechanism.
 
+Commands execute only after the final DTMF digit is released. After a 350 ms
+simplex turnaround, one 525 Hz tone acknowledges an accepted command and leads
+directly into any requested transmission. `*#` cancels an armed prefix and is
+acknowledged with two 525 Hz tones.
+
 Settings occupy the final 4 KB flash sector and include a format version and
 checksum. Firmware refuses to save if its linked image ever grows into that
 sector. Reflashing only the UF2 normally leaves the saved record intact; a full

@@ -25,6 +25,10 @@
 #define DTMF_PREFIX_TIMEOUT_MS     3000u
 #define DTMF_MIN_FRAME_ENERGY    100000u
 #define DTMF_RECENT_DIGITS            8u
+#define DTMF_TURNAROUND_MS           350u
+#define DTMF_ACK_HZ                  525u
+#define DTMF_ACK_MS                  120u
+#define DTMF_ACK_GAP_MS              100u
 
 typedef enum {
     DTMF_COMMAND_NONE = 0,
@@ -36,6 +40,7 @@ typedef enum {
     DTMF_COMMAND_WARBLE,
     DTMF_COMMAND_SWEEP,
     DTMF_COMMAND_RESTART,
+    DTMF_COMMAND_CANCEL,
 } dtmf_command_t;
 
 // Q14 values of 2*cos(2*pi*f/8000) for the four row and column tones.
@@ -63,7 +68,24 @@ static uint8_t release_frames;
 static bool prefix_armed;
 static uint32_t prefix_deadline_ms;
 static volatile dtmf_command_t pending_command;
+static dtmf_command_t released_command;
 static char recent_digits[DTMF_RECENT_DIGITS + 1u];
+
+static dtmf_command_t command_for_digit(char digit)
+{
+    switch (digit) {
+    case '0': return DTMF_COMMAND_STOP;
+    case '1': return DTMF_COMMAND_START;
+    case '2': return DTMF_COMMAND_ID;
+    case '3': return DTMF_COMMAND_RESTART;
+    case '4': return DTMF_COMMAND_SEQUENCE_ONCE;
+    case '5': return DTMF_COMMAND_FOX_IDENTIFIER;
+    case '6': return DTMF_COMMAND_WARBLE;
+    case '7': return DTMF_COMMAND_SWEEP;
+    case '#': return DTMF_COMMAND_CANCEL;
+    default: return DTMF_COMMAND_NONE;
+    }
+}
 
 static void record_digit(char digit)
 {
@@ -128,20 +150,14 @@ static void accept_digit(char digit)
 
     if (digit == '*') {
         prefix_armed = true;
+        released_command = DTMF_COMMAND_NONE;
         prefix_deadline_ms = now + DTMF_PREFIX_TIMEOUT_MS;
         return;
     }
     if (!prefix_armed) return;
     prefix_armed = false;
 
-    if (digit == '1') pending_command = DTMF_COMMAND_START;
-    else if (digit == '0') pending_command = DTMF_COMMAND_STOP;
-    else if (digit == '2') pending_command = DTMF_COMMAND_ID;
-    else if (digit == '3') pending_command = DTMF_COMMAND_RESTART;
-    else if (digit == '4') pending_command = DTMF_COMMAND_SEQUENCE_ONCE;
-    else if (digit == '5') pending_command = DTMF_COMMAND_FOX_IDENTIFIER;
-    else if (digit == '6') pending_command = DTMF_COMMAND_WARBLE;
-    else if (digit == '7') pending_command = DTMF_COMMAND_SWEEP;
+    released_command = command_for_digit(digit);
 }
 
 static void process_digit(char digit)
@@ -152,6 +168,10 @@ static void process_digit(char digit)
         if (latched_digit != '\0' && ++release_frames >= DTMF_RELEASE_FRAMES) {
             latched_digit = '\0';
             release_frames = 0u;
+            if (released_command != DTMF_COMMAND_NONE) {
+                pending_command = released_command;
+                released_command = DTMF_COMMAND_NONE;
+            }
         }
         return;
     }
@@ -185,6 +205,7 @@ static bool sample_callback(struct repeating_timer *timer)
         stable_frames = 0u;
         release_frames = 0u;
         prefix_armed = false;
+        released_command = DTMF_COMMAND_NONE;
         return true;
     }
     const int32_t sample = (int32_t)adc_read();
@@ -215,6 +236,20 @@ void dtmf_init(void)
                            sample_callback, NULL, &sample_timer);
 }
 
+static bool send_courtesy(unsigned count, bool remain_keyed)
+{
+    sleep_ms(DTMF_TURNAROUND_MS);
+    if (!radio_ptt_on()) return false;
+    for (unsigned i = 0; i < count; ++i) {
+        audio_start_tone(DTMF_ACK_HZ);
+        sleep_ms(DTMF_ACK_MS);
+        audio_stop();
+        if (i + 1u < count) sleep_ms(DTMF_ACK_GAP_MS);
+    }
+    if (!remain_keyed) radio_ptt_off();
+    return true;
+}
+
 void dtmf_poll(void)
 {
     const uint32_t interrupt_state = save_and_disable_interrupts();
@@ -225,11 +260,31 @@ void dtmf_poll(void)
 
     fox_settings_t settings;
     settings_get(&settings);
+    const bool was_enabled = station_control_is_enabled();
+    station_control_set_manual_mode(false);
+    station_control_set_enabled(true);
+
+    if (command == DTMF_COMMAND_CANCEL) {
+        send_courtesy(2u, false);
+        if (!was_enabled) station_control_complete_stop();
+        station_control_set_manual_mode(settings.operating_mode == 1u);
+        return;
+    }
+
+    const bool continues_transmitting =
+        command != DTMF_COMMAND_START;
+    if (!send_courtesy(1u, continues_transmitting)) {
+        if (!was_enabled) station_control_complete_stop();
+        station_control_set_manual_mode(settings.operating_mode == 1u);
+        return;
+    }
+
     if (command == DTMF_COMMAND_START || command == DTMF_COMMAND_STOP) {
         const bool enabled = command == DTMF_COMMAND_START;
         settings.transmit_enabled = enabled;
         settings_set(&settings);
         station_control_set_enabled(enabled);
+        station_control_set_manual_mode(settings.operating_mode == 1u);
         return;
     }
 
@@ -244,10 +299,7 @@ void dtmf_poll(void)
         return;
     }
 
-    const bool was_enabled = station_control_is_enabled();
     const workflow_step_t previous_step = workflow_get();
-    station_control_set_manual_mode(false);
-    station_control_set_enabled(true);
     if (command == DTMF_COMMAND_ID) {
         workflow_set(WORKFLOW_STATION_ID);
         morse_transmit(settings.station_id);
@@ -265,6 +317,16 @@ void dtmf_poll(void)
     if (!was_enabled) station_control_complete_stop();
     station_control_set_manual_mode(settings.operating_mode == 1u);
     workflow_set(previous_step);
+}
+
+bool dtmf_queue_command(char digit)
+{
+    const dtmf_command_t command = command_for_digit(digit);
+    if (command == DTMF_COMMAND_NONE) return false;
+    const uint32_t interrupt_state = save_and_disable_interrupts();
+    pending_command = command;
+    restore_interrupts(interrupt_state);
+    return true;
 }
 
 void dtmf_get_recent(char *destination, size_t destination_size)

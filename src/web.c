@@ -92,9 +92,21 @@ static const char *key_handler(int index, int count, char *names[], char *values
     return "/key-state.txt";
 }
 
+static const char *fox_command_handler(int index, int count,
+                                       char *names[], char *values[])
+{
+    (void)index;
+    const char *command = parameter_value(count, names, values, "command");
+    if (command != NULL && command[0] != '\0' && command[1] == '\0') {
+        dtmf_queue_command(command[0]);
+    }
+    return "/key-state.txt";
+}
+
 static const tCGI cgi_handlers[] = {
     {"/mode.cgi", mode_handler},
     {"/key.cgi", key_handler},
+    {"/fox-command.cgi", fox_command_handler},
     {"/save.cgi", web_settings_save_handler},
     {"/reboot.cgi", reboot_handler},
     {"/station.cgi", station_handler},
