@@ -9,10 +9,6 @@ automatic transmitter sequence described below. **PicoCW** is a manual MCW
 keyer using GP2 and GP3 for a straight key or DIT/DAH paddles. The architecture
 is designed to accommodate additional PicoShack radio tools.
 
-It also pulses an external dummy load through a switch on GP4 for USB power
-banks that shut down when the Pico's current draw is too low. By default the
-load is enabled for 1 second every 5 seconds, independently of the fox cycle.
-
 The repeating sequence is:
 
 1. `FOX` in Morse at 15 WPM, then 1 second off air
@@ -43,10 +39,10 @@ operates the same MCW keyer as the physical inputs. Device settings select
 PicoFox, PicoCW, or standby as the independently persisted power-up feature.
 
 Settings are divided by ownership. Device settings control the startup feature,
-Wi-Fi access point, USB power-bank dummy load, factory reset, and reboot.
+Wi-Fi access point, factory reset, and reboot.
 PicoFox settings control the station ID, sequence audio, and pauses; PicoCW
-settings control its key input and MCW behavior. Disabling the dummy load turns
-GP4 off immediately. Changes apply at the next appropriate sequence stage and are saved
+settings control its key input and MCW behavior. Changes apply at the next
+appropriate sequence stage and are saved
 to flash during the next off-air pause. They are restored
 after power cycles. The defaults in `config.h` are used when no valid saved
 record exists, including on the first boot. Change `WIFI_AP_SSID` and
@@ -75,7 +71,7 @@ require internet access.
 
 **Stop transmitting** interrupts the current tone or CW message, transmits the
 configured station ID once in CW, and then prevents further fox stages while
-leaving Wi-Fi and the power-bank keep-alive operational. **Start transmitting**
+leaving Wi-Fi operational. **Start transmitting**
 resumes the sequence. The state is persistent. Pressing the
 Pico 2 W BOOTSEL button toggles the same start/stop state; its input is sampled
 and debounced using Raspberry Pi's flash-safe BOOTSEL technique.
@@ -116,7 +112,6 @@ the complete wiring diagram and component connections.
 | GP1 | Audio | Feed the mic input through DC blocking and a fixed attenuation network |
 | GP2 | DIT key | Reserved for a future external paddle input |
 | GP3 | DAH key | Reserved for a future external paddle input |
-| GP4 | Power-bank keep-alive | Drive the external dummy-load switch; do not drive the load directly |
 | GND | Common | Connect only when the chosen radio interface uses a common ground |
 | LED | TX indicator | On while PTT is asserted |
 
@@ -133,28 +128,6 @@ Use a transistor or optocoupler for PTT. With the common 2N3904 low-side PTT
 circuit, GP0 drives the base through a current-limiting resistor, the emitter goes to
 ground, and the collector goes to the radio's PTT line. `PTT_ACTIVE_LEVEL` then
 remains `1`.
-
-### USB power-bank keep-alive
-
-Do not connect a dummy-load resistor to GP4. GP4 only controls the switch:
-
-```text
-USB 5 V ---- 68 ohm, 1 W resistor ---- Drain  N-MOSFET
-                                           Source ---- GND
-GP4 --------- 100 ohm -------------------- Gate
-                                           Gate ---- 100 kohm ---- GND
-```
-
-Use a logic-level N-channel MOSFET that turns on fully at 3.3 V gate drive,
-such as an AO3400A. The resistor draws about 74 mA and dissipates about 0.37 W
-during each pulse; a 1 W part provides useful thermal margin. Keep it away from
-plastic and wiring because it will become warm. The Pico and load circuit must
-share the USB supply ground.
-
-Power-bank behavior varies. Test the default 1-second pulse every 5 seconds and
-increase `KEEP_ALIVE_PULSE_MS` or reduce `KEEP_ALIVE_PERIOD_MS` in
-`src/config.h` if the bank still shuts down. A higher resistance such as 100
-ohms wastes less energy but may not meet the bank's detection threshold.
 
 ## Build
 

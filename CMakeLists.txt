@@ -42,7 +42,6 @@ add_executable(PicoShack
     src/main.c
     src/audio.c
     src/fox.c
-    src/keep_alive.c
     src/keyer.c
     src/morse.c
     src/radio.c

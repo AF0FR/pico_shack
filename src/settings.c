@@ -15,7 +15,7 @@ static fox_settings_t current_settings;
 static bool settings_dirty;
 
 #define SETTINGS_MAGIC   0x50465832u  // "PFX2"
-#define SETTINGS_VERSION 7u
+#define SETTINGS_VERSION 8u
 #define SETTINGS_FLASH_OFFSET (PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE)
 
 typedef struct {
@@ -101,7 +101,6 @@ void settings_get_defaults(fox_settings_t *destination)
         .station_id = STATION_ID,
         .wifi_ssid = WIFI_AP_SSID,
         .wifi_password = WIFI_AP_PASSWORD,
-        .keep_alive_enabled = KEEP_ALIVE_ENABLED,
         .transmit_enabled = 1u,
         .operating_mode = OPERATING_MODE_DEFAULT,
         .startup_feature = OPERATING_MODE_DEFAULT,
@@ -131,7 +130,7 @@ settings_validation_t settings_validate(const fox_settings_t *s)
     if (!valid_station_id(s->station_id)) return SETTINGS_ERROR_STATION_ID;
     if (!valid_wifi_ssid(s->wifi_ssid)) return SETTINGS_ERROR_WIFI_SSID;
     if (!valid_wifi_text(s->wifi_password, 8u, WIFI_PASSWORD_MAX_LENGTH)) return SETTINGS_ERROR_WIFI_PASSWORD;
-    if (s->keep_alive_enabled > 1u || s->transmit_enabled > 1u) return SETTINGS_ERROR_FLAGS;
+    if (s->transmit_enabled > 1u) return SETTINGS_ERROR_FLAGS;
     if (s->operating_mode > 2u || s->startup_feature > 2u) return SETTINGS_ERROR_MODE;
     if (s->keyer_mode > 2u || s->keyer_reversed > 1u) return SETTINGS_ERROR_KEYER_MODE;
     if (s->keyer_hang_ms > 5000u) return SETTINGS_ERROR_KEYER_HANG;

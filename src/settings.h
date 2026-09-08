@@ -11,7 +11,6 @@ typedef struct {
     char station_id[STATION_ID_MAX_LENGTH + 1u];
     char wifi_ssid[WIFI_SSID_MAX_LENGTH + 1u];
     char wifi_password[WIFI_PASSWORD_MAX_LENGTH + 1u];
-    uint8_t keep_alive_enabled;
     uint8_t transmit_enabled;
     uint8_t operating_mode;
     uint8_t startup_feature;

@@ -102,9 +102,9 @@ static const tCGI cgi_handlers[] = {
 
 static const char *ssi_tags[] = {
     "id", "wpm", "cw", "gain", "wl", "wh", "ws", "wd",
-    "sl", "sh", "ss", "sm", "sd", "fp", "tp", "idle", "ssid", "kacheck",
+    "sl", "sh", "ss", "sm", "sd", "fp", "tp", "idle", "ssid",
     "txstatus", "startdis", "stopdis", "step", "stepid", "savecls", "savemsg",
-    "did", "dssid", "dpass", "dka", "dwpm", "dcw", "dgain", "dwl", "dwh",
+    "did", "dssid", "dpass", "dwpm", "dcw", "dgain", "dwl", "dwh",
     "dws", "dwd", "dsl", "dsh", "dss", "dsm", "dsd", "dfp", "dtp", "didle"
     , "mode", "keymode", "rev", "hang", "modename", "startup"
 };
@@ -135,50 +135,47 @@ static u16_t ssi_handler(int index, char *output, int output_length)
         case 15: return (u16_t)snprintf(output, output_length, "%u", s.idle_ms);
         case 16: return (u16_t)snprintf(output, output_length, "%s", s.wifi_ssid);
         case 17: return (u16_t)snprintf(output, output_length, "%s",
-                                        s.keep_alive_enabled ? "checked" : "");
-        case 18: return (u16_t)snprintf(output, output_length, "%s",
                                         station_control_stop_requested() ? "Stopping" :
                                         (station_control_is_enabled() ? "Running" : "Stopped"));
-        case 19: return (u16_t)snprintf(output, output_length, "%s",
+        case 18: return (u16_t)snprintf(output, output_length, "%s",
                                         station_control_is_enabled() ? "disabled" : "");
-        case 20: return (u16_t)snprintf(output, output_length, "%s",
+        case 19: return (u16_t)snprintf(output, output_length, "%s",
                                         station_control_is_enabled() &&
                                         !station_control_stop_requested() ? "" : "disabled");
-        case 21: return (u16_t)snprintf(output, output_length, "%s",
+        case 20: return (u16_t)snprintf(output, output_length, "%s",
                                         workflow_name(workflow_get()));
-        case 22: return (u16_t)snprintf(output, output_length, "%u",
+        case 21: return (u16_t)snprintf(output, output_length, "%u",
                                         (unsigned)workflow_get());
-        case 23: return (u16_t)snprintf(output, output_length, "%s",
+        case 22: return (u16_t)snprintf(output, output_length, "%s",
                                         web_settings_save_class());
-        case 24: return (u16_t)snprintf(output, output_length, "%s",
+        case 23: return (u16_t)snprintf(output, output_length, "%s",
                                         web_settings_save_message());
-        case 25: return (u16_t)snprintf(output, output_length, "%s", d.station_id);
-        case 26: return (u16_t)snprintf(output, output_length, "%s", d.wifi_ssid);
-        case 27: return (u16_t)snprintf(output, output_length, "%s", d.wifi_password);
-        case 28: return (u16_t)snprintf(output, output_length, "%s", d.keep_alive_enabled ? "enabled" : "disabled");
-        case 29: return (u16_t)snprintf(output, output_length, "%u", d.cw_wpm);
-        case 30: return (u16_t)snprintf(output, output_length, "%u", d.cw_tone_hz);
-        case 31: return (u16_t)snprintf(output, output_length, "%u", d.audio_gain_percent);
-        case 32: return (u16_t)snprintf(output, output_length, "%u", d.warble_low_hz);
-        case 33: return (u16_t)snprintf(output, output_length, "%u", d.warble_high_hz);
-        case 34: return (u16_t)snprintf(output, output_length, "%u", d.warble_switch_ms);
-        case 35: return (u16_t)snprintf(output, output_length, "%u", d.warble_duration_ms);
-        case 36: return (u16_t)snprintf(output, output_length, "%u", d.sweep_low_hz);
-        case 37: return (u16_t)snprintf(output, output_length, "%u", d.sweep_high_hz);
-        case 38: return (u16_t)snprintf(output, output_length, "%u", d.sweep_step_hz);
-        case 39: return (u16_t)snprintf(output, output_length, "%u", d.sweep_step_ms);
-        case 40: return (u16_t)snprintf(output, output_length, "%u", d.sweep_duration_ms);
-        case 41: return (u16_t)snprintf(output, output_length, "%u", d.fox_pause_ms);
-        case 42: return (u16_t)snprintf(output, output_length, "%u", d.tone_pause_ms);
-        case 43: return (u16_t)snprintf(output, output_length, "%u", d.idle_ms);
-        case 44: return (u16_t)snprintf(output, output_length, "%u", s.operating_mode);
-        case 45: return (u16_t)snprintf(output, output_length, "%u", s.keyer_mode);
-        case 46: return (u16_t)snprintf(output, output_length, "%s", s.keyer_reversed ? "checked" : "");
-        case 47: return (u16_t)snprintf(output, output_length, "%u", s.keyer_hang_ms);
-        case 48: return (u16_t)snprintf(output, output_length, "%s",
+        case 24: return (u16_t)snprintf(output, output_length, "%s", d.station_id);
+        case 25: return (u16_t)snprintf(output, output_length, "%s", d.wifi_ssid);
+        case 26: return (u16_t)snprintf(output, output_length, "%s", d.wifi_password);
+        case 27: return (u16_t)snprintf(output, output_length, "%u", d.cw_wpm);
+        case 28: return (u16_t)snprintf(output, output_length, "%u", d.cw_tone_hz);
+        case 29: return (u16_t)snprintf(output, output_length, "%u", d.audio_gain_percent);
+        case 30: return (u16_t)snprintf(output, output_length, "%u", d.warble_low_hz);
+        case 31: return (u16_t)snprintf(output, output_length, "%u", d.warble_high_hz);
+        case 32: return (u16_t)snprintf(output, output_length, "%u", d.warble_switch_ms);
+        case 33: return (u16_t)snprintf(output, output_length, "%u", d.warble_duration_ms);
+        case 34: return (u16_t)snprintf(output, output_length, "%u", d.sweep_low_hz);
+        case 35: return (u16_t)snprintf(output, output_length, "%u", d.sweep_high_hz);
+        case 36: return (u16_t)snprintf(output, output_length, "%u", d.sweep_step_hz);
+        case 37: return (u16_t)snprintf(output, output_length, "%u", d.sweep_step_ms);
+        case 38: return (u16_t)snprintf(output, output_length, "%u", d.sweep_duration_ms);
+        case 39: return (u16_t)snprintf(output, output_length, "%u", d.fox_pause_ms);
+        case 40: return (u16_t)snprintf(output, output_length, "%u", d.tone_pause_ms);
+        case 41: return (u16_t)snprintf(output, output_length, "%u", d.idle_ms);
+        case 42: return (u16_t)snprintf(output, output_length, "%u", s.operating_mode);
+        case 43: return (u16_t)snprintf(output, output_length, "%u", s.keyer_mode);
+        case 44: return (u16_t)snprintf(output, output_length, "%s", s.keyer_reversed ? "checked" : "");
+        case 45: return (u16_t)snprintf(output, output_length, "%u", s.keyer_hang_ms);
+        case 46: return (u16_t)snprintf(output, output_length, "%s",
                                         s.operating_mode == 0u ? "PicoFox" :
                                         s.operating_mode == 1u ? "PicoCW" : "Standby");
-        case 49: return (u16_t)snprintf(output, output_length, "%u", s.startup_feature);
+        case 47: return (u16_t)snprintf(output, output_length, "%u", s.startup_feature);
         default: return 0;
     }
 }

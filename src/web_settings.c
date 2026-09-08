@@ -10,7 +10,6 @@
 #include "lwip/apps/httpd.h"
 #include "lwip/pbuf.h"
 
-#include "keep_alive.h"
 #include "settings.h"
 
 #define POST_BODY_MAX 1024u
@@ -71,10 +70,6 @@ static const char *save_handler(int count, char *names[], char *values[])
     if (password != NULL && password[0] != '\0') {
         copy_text(settings.wifi_password, sizeof(settings.wifi_password), password, false);
     }
-    if (parameter_value(count, names, values, "kap") != NULL) {
-        settings.keep_alive_enabled =
-            parameter_value(count, names, values, "ka") != NULL;
-    }
     const char *mode = parameter_value(count, names, values, "mode");
     if (mode != NULL) settings.operating_mode = (uint8_t)strtoul(mode, NULL, 10);
     const char *startup = parameter_value(count, names, values, "startup");
@@ -109,7 +104,6 @@ static const char *save_handler(int count, char *names[], char *values[])
         save_result = 2u;
         return complete_page;
     }
-    keep_alive_set_enabled(settings.keep_alive_enabled != 0u);
     save_result = 1u;
     return complete_page;
 }
@@ -132,9 +126,6 @@ const char *web_settings_defaults_handler(int index, int count,
         return "/settings.shtml";
     }
     settings_restore_defaults();
-    fox_settings_t restored;
-    settings_get(&restored);
-    keep_alive_set_enabled(restored.keep_alive_enabled != 0u);
     save_result = 3u;
     save_validation = SETTINGS_VALID;
     return "/settings.shtml";

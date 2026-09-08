@@ -7,15 +7,8 @@
 #define PTT_PIN   0u
 #define AUDIO_PIN 1u
 
-// USB power-bank keep-alive load. GP4 drives an external logic-level
-// N-channel MOSFET; it must not drive the load resistor directly.
-#define KEEP_ALIVE_PIN          4u
 #define DIT_PIN                 2u
 #define DAH_PIN                 3u
-#define KEEP_ALIVE_ACTIVE_LEVEL 1
-#define KEEP_ALIVE_ENABLED      1
-#define KEEP_ALIVE_PULSE_MS     1000u
-#define KEEP_ALIVE_PERIOD_MS    5000u
 
 // Pico 2 W access point. WPA2 passwords must contain at least 8 characters.
 #define WIFI_AP_SSID     "PicoShack"

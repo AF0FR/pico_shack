@@ -2,7 +2,6 @@
 
 #include "audio.h"
 #include "fox.h"
-#include "keep_alive.h"
 #include "keyer.h"
 #include "radio.h"
 #include "settings.h"
@@ -14,7 +13,6 @@ int main(void)
 {
     stdio_init_all();
     settings_init();
-    keep_alive_init();
     keyer_init();
     if (!web_init()) {
         while (true) {
