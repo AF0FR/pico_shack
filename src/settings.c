@@ -15,7 +15,7 @@ static fox_settings_t current_settings;
 static bool settings_dirty;
 
 #define SETTINGS_MAGIC   0x50465832u  // "PFX2"
-#define SETTINGS_VERSION 8u
+#define SETTINGS_VERSION 9u
 #define SETTINGS_FLASH_OFFSET (PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE)
 
 typedef struct {
@@ -62,6 +62,19 @@ static bool valid_station_id(const char *text)
     return length > 0 && length <= STATION_ID_MAX_LENGTH;
 }
 
+static bool valid_fox_identifier(const char *text)
+{
+    size_t length = 0;
+    while (text[length] != '\0' && length <= FOX_IDENTIFIER_MAX_LENGTH) {
+        const char c = text[length];
+        const bool valid = (c >= 'A' && c <= 'Z') ||
+                           (c >= '0' && c <= '9') || c == '/';
+        if (!valid) return false;
+        ++length;
+    }
+    return length > 0 && length <= FOX_IDENTIFIER_MAX_LENGTH;
+}
+
 static bool valid_wifi_text(const char *text, size_t minimum, size_t maximum)
 {
     size_t length = 0;
@@ -99,6 +112,7 @@ void settings_get_defaults(fox_settings_t *destination)
 {
     *destination = (fox_settings_t) {
         .station_id = STATION_ID,
+        .fox_identifier = FOX_IDENTIFIER,
         .wifi_ssid = WIFI_AP_SSID,
         .wifi_password = WIFI_AP_PASSWORD,
         .transmit_enabled = 1u,
@@ -128,6 +142,7 @@ void settings_get_defaults(fox_settings_t *destination)
 settings_validation_t settings_validate(const fox_settings_t *s)
 {
     if (!valid_station_id(s->station_id)) return SETTINGS_ERROR_STATION_ID;
+    if (!valid_fox_identifier(s->fox_identifier)) return SETTINGS_ERROR_FOX_IDENTIFIER;
     if (!valid_wifi_ssid(s->wifi_ssid)) return SETTINGS_ERROR_WIFI_SSID;
     if (!valid_wifi_text(s->wifi_password, 8u, WIFI_PASSWORD_MAX_LENGTH)) return SETTINGS_ERROR_WIFI_PASSWORD;
     if (s->transmit_enabled > 1u) return SETTINGS_ERROR_FLAGS;
@@ -155,6 +170,7 @@ const char *settings_validation_message(settings_validation_t result)
     switch (result) {
     case SETTINGS_VALID: return "Settings applied and queued for flash storage.";
     case SETTINGS_ERROR_STATION_ID: return "Station ID must contain 1-15 uppercase letters, digits, or slash characters.";
+    case SETTINGS_ERROR_FOX_IDENTIFIER: return "Fox identifier must contain 1-8 uppercase letters, digits, or slash characters.";
     case SETTINGS_ERROR_WIFI_SSID: return "Network name contains an unsupported character or is longer than 32 characters.";
     case SETTINGS_ERROR_WIFI_PASSWORD: return "Wi-Fi password must contain 8-63 printable characters.";
     case SETTINGS_ERROR_MODE: return "Operating mode must be PicoFox or PicoCW.";

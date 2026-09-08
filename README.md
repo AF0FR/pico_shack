@@ -13,9 +13,9 @@ is designed to accommodate additional PicoShack radio tools.
 
 The repeating sequence is:
 
-1. `FOX` in Morse at 15 WPM, then 1 second off air
+1. The configured fox identifier (`MO` by default) in Morse at 15 WPM, then 1 second off air
 2. 300/800 Hz warble for 5 seconds, then 5 seconds off air
-3. `FOX` in Morse, then 1 second off air
+3. The fox identifier in Morse, then 1 second off air
 4. 300-800-300 Hz sweep for 5 seconds, then 5 seconds off air
 5. The configured station ID twice in Morse, then idle for 15 seconds off air
 
@@ -42,7 +42,8 @@ PicoFox, PicoCW, or standby as the independently persisted power-up feature.
 
 Settings are divided by ownership. Device settings control the startup feature,
 Wi-Fi access point, factory reset, and reboot.
-PicoFox settings control the station ID, sequence audio, and pauses; PicoCW
+PicoFox settings control the station ID, fox identifier, sequence audio, and
+pauses; PicoCW
 settings control its key input and MCW behavior. Changes apply at the next
 appropriate sequence stage and are saved
 to flash during the next off-air pause. They are restored
@@ -93,8 +94,11 @@ the other settings but take effect after reboot, since restarting the access
 point immediately would interrupt the response to the phone.
 
 DTMF commands require a `*` prefix and are recognized only while PTT is off.
-Send `*1` to start PicoFox, `*0` to request its normal stop-and-ID sequence, or
-`*2` to transmit the configured station ID immediately. Each tone must remain
+Send `*1` to start PicoFox, `*0` to request its normal stop-and-ID sequence,
+`*2` to transmit the configured station ID, `*3` to restart the sequence from
+its first stage, `*4` to run one complete sequence, `*5` to send the configured
+fox identifier, `*6` to send the warble, or `*7` to send the sweep. Each tone
+must remain
 stable for roughly 75 ms, and the command digit must follow `*` within three
 seconds. The prefix reduces accidental activation from ordinary receiver
 audio; it is not an authentication mechanism.

@@ -2,6 +2,7 @@
 
 // Station identification. Change this before transmitting.
 #define STATION_ID "KB0TLL"
+#define FOX_IDENTIFIER "MO"
 
 // Raspberry Pi Pico GPIO assignments.
 #define PTT_PIN   0u

@@ -107,7 +107,8 @@ static const char *ssi_tags[] = {
     "txstatus", "startdis", "stopdis", "step", "stepid", "savecls", "savemsg",
     "did", "dssid", "dpass", "dwpm", "dcw", "dgain", "dwl", "dwh",
     "dws", "dwd", "dsl", "dsh", "dss", "dsm", "dsd", "dfp", "dtp", "didle"
-    , "mode", "keymode", "rev", "hang", "modename", "startup", "dtmf"
+    , "mode", "keymode", "rev", "hang", "modename", "startup", "dtmf",
+    "foxid", "dfoxid"
 };
 
 static u16_t ssi_handler(int index, char *output, int output_length)
@@ -183,6 +184,8 @@ static u16_t ssi_handler(int index, char *output, int output_length)
             return (u16_t)snprintf(output, output_length, "%s",
                                    recent[0] != '\0' ? recent : "none");
         }
+        case 49: return (u16_t)snprintf(output, output_length, "%s", s.fox_identifier);
+        case 50: return (u16_t)snprintf(output, output_length, "%s", d.fox_identifier);
         default: return 0;
     }
 }

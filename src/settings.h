@@ -4,11 +4,13 @@
 #include <stdint.h>
 
 #define STATION_ID_MAX_LENGTH 15u
+#define FOX_IDENTIFIER_MAX_LENGTH 8u
 #define WIFI_SSID_MAX_LENGTH 32u
 #define WIFI_PASSWORD_MAX_LENGTH 63u
 
 typedef struct {
     char station_id[STATION_ID_MAX_LENGTH + 1u];
+    char fox_identifier[FOX_IDENTIFIER_MAX_LENGTH + 1u];
     char wifi_ssid[WIFI_SSID_MAX_LENGTH + 1u];
     char wifi_password[WIFI_PASSWORD_MAX_LENGTH + 1u];
     uint8_t transmit_enabled;
@@ -37,6 +39,7 @@ typedef struct {
 typedef enum {
     SETTINGS_VALID = 0,
     SETTINGS_ERROR_STATION_ID,
+    SETTINGS_ERROR_FOX_IDENTIFIER,
     SETTINGS_ERROR_WIFI_SSID,
     SETTINGS_ERROR_WIFI_PASSWORD,
     SETTINGS_ERROR_FLAGS,

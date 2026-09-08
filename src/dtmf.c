@@ -9,7 +9,9 @@
 #include "hardware/sync.h"
 #include "pico/stdlib.h"
 
+#include "audio.h"
 #include "config.h"
+#include "fox.h"
 #include "morse.h"
 #include "radio.h"
 #include "settings.h"
@@ -29,6 +31,11 @@ typedef enum {
     DTMF_COMMAND_START,
     DTMF_COMMAND_STOP,
     DTMF_COMMAND_ID,
+    DTMF_COMMAND_SEQUENCE_ONCE,
+    DTMF_COMMAND_FOX_IDENTIFIER,
+    DTMF_COMMAND_WARBLE,
+    DTMF_COMMAND_SWEEP,
+    DTMF_COMMAND_RESTART,
 } dtmf_command_t;
 
 // Q14 values of 2*cos(2*pi*f/8000) for the four row and column tones.
@@ -130,6 +137,11 @@ static void accept_digit(char digit)
     if (digit == '1') pending_command = DTMF_COMMAND_START;
     else if (digit == '0') pending_command = DTMF_COMMAND_STOP;
     else if (digit == '2') pending_command = DTMF_COMMAND_ID;
+    else if (digit == '3') pending_command = DTMF_COMMAND_RESTART;
+    else if (digit == '4') pending_command = DTMF_COMMAND_SEQUENCE_ONCE;
+    else if (digit == '5') pending_command = DTMF_COMMAND_FOX_IDENTIFIER;
+    else if (digit == '6') pending_command = DTMF_COMMAND_WARBLE;
+    else if (digit == '7') pending_command = DTMF_COMMAND_SWEEP;
 }
 
 static void process_digit(char digit)
@@ -221,13 +233,37 @@ void dtmf_poll(void)
         return;
     }
 
+    if (command == DTMF_COMMAND_SEQUENCE_ONCE ||
+        command == DTMF_COMMAND_RESTART) {
+        settings.operating_mode = 0u;
+        settings.transmit_enabled = 1u;
+        settings_set(&settings);
+        station_control_set_manual_mode(false);
+        station_control_set_enabled(true);
+        fox_request_sequence(command == DTMF_COMMAND_SEQUENCE_ONCE);
+        return;
+    }
+
     const bool was_enabled = station_control_is_enabled();
     const workflow_step_t previous_step = workflow_get();
+    station_control_set_manual_mode(false);
     station_control_set_enabled(true);
-    workflow_set(WORKFLOW_STATION_ID);
-    morse_transmit(settings.station_id);
+    if (command == DTMF_COMMAND_ID) {
+        workflow_set(WORKFLOW_STATION_ID);
+        morse_transmit(settings.station_id);
+    } else if (command == DTMF_COMMAND_FOX_IDENTIFIER) {
+        workflow_set(WORKFLOW_FOX_1);
+        morse_transmit(settings.fox_identifier);
+    } else if (command == DTMF_COMMAND_WARBLE) {
+        workflow_set(WORKFLOW_WARBLE);
+        if (radio_ptt_on()) audio_play_warble();
+    } else if (command == DTMF_COMMAND_SWEEP) {
+        workflow_set(WORKFLOW_SWEEP);
+        if (radio_ptt_on()) audio_play_sweep();
+    }
     radio_ptt_off();
     if (!was_enabled) station_control_complete_stop();
+    station_control_set_manual_mode(settings.operating_mode == 1u);
     workflow_set(previous_step);
 }
 

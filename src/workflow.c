@@ -16,11 +16,11 @@ const char *workflow_name(workflow_step_t step)
 {
     static const char *const names[] = {
         "Stopped",
-        "FOX in CW",
+        "Fox identifier in CW",
         "1 second pause",
         "Warble",
         "5 second pause",
-        "FOX in CW",
+        "Fox identifier in CW",
         "1 second pause",
         "Sweep",
         "5 second pause",

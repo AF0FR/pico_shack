@@ -62,6 +62,11 @@ static const char *save_handler(int count, char *names[], char *values[])
     if (station_id != NULL) {
         copy_text(settings.station_id, sizeof(settings.station_id), station_id, true);
     }
+    const char *fox_identifier = parameter_value(count, names, values, "foxid");
+    if (fox_identifier != NULL) {
+        copy_text(settings.fox_identifier, sizeof(settings.fox_identifier),
+                  fox_identifier, true);
+    }
     const char *ssid = parameter_value(count, names, values, "ssid");
     if (ssid != NULL) {
         copy_text(settings.wifi_ssid, sizeof(settings.wifi_ssid), ssid, false);
