@@ -11,6 +11,7 @@
 #include "pico/cyw43_arch.h"
 
 #include "config.h"
+#include "dtmf.h"
 #include "keyer.h"
 #include "settings.h"
 #include "station_control.h"
@@ -106,7 +107,7 @@ static const char *ssi_tags[] = {
     "txstatus", "startdis", "stopdis", "step", "stepid", "savecls", "savemsg",
     "did", "dssid", "dpass", "dwpm", "dcw", "dgain", "dwl", "dwh",
     "dws", "dwd", "dsl", "dsh", "dss", "dsm", "dsd", "dfp", "dtp", "didle"
-    , "mode", "keymode", "rev", "hang", "modename", "startup"
+    , "mode", "keymode", "rev", "hang", "modename", "startup", "dtmf"
 };
 
 static u16_t ssi_handler(int index, char *output, int output_length)
@@ -176,6 +177,12 @@ static u16_t ssi_handler(int index, char *output, int output_length)
                                         s.operating_mode == 0u ? "PicoFox" :
                                         s.operating_mode == 1u ? "PicoCW" : "Standby");
         case 47: return (u16_t)snprintf(output, output_length, "%u", s.startup_feature);
+        case 48: {
+            char recent[9];
+            dtmf_get_recent(recent, sizeof(recent));
+            return (u16_t)snprintf(output, output_length, "%s",
+                                   recent[0] != '\0' ? recent : "none");
+        }
         default: return 0;
     }
 }

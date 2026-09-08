@@ -3,6 +3,8 @@
 PicoShack is an extensible amateur-radio automation toolkit for the Raspberry
 Pi Pico 2 W. It keys PTT on GP0, generates adjustable PWM audio on GP1, and
 hosts its own Wi-Fi access point and phone-friendly control application.
+Conditioned receiver-speaker audio on GP26 also provides off-air DTMF remote
+control.
 
 The firmware currently has two selectable features. **PicoFox** runs the
 automatic transmitter sequence described below. **PicoCW** is a manual MCW
@@ -90,6 +92,13 @@ password field preserves the existing password. Wi-Fi changes are saved with
 the other settings but take effect after reboot, since restarting the access
 point immediately would interrupt the response to the phone.
 
+DTMF commands require a `*` prefix and are recognized only while PTT is off.
+Send `*1` to start PicoFox, `*0` to request its normal stop-and-ID sequence, or
+`*2` to transmit the configured station ID immediately. Each tone must remain
+stable for roughly 75 ms, and the command digit must follow `*` within three
+seconds. The prefix reduces accidental activation from ordinary receiver
+audio; it is not an authentication mechanism.
+
 Settings occupy the final 4 KB flash sector and include a format version and
 checksum. Firmware refuses to save if its linked image ever grows into that
 sector. Reflashing only the UF2 normally leaves the saved record intact; a full
@@ -112,6 +121,7 @@ the complete wiring diagram and component connections.
 | GP1 | Audio | Feed the mic input through DC blocking and a fixed attenuation network |
 | GP2 | DIT key | Reserved for a future external paddle input |
 | GP3 | DAH key | Reserved for a future external paddle input |
+| GP26/ADC0 | Radio speaker input | Connect only through the protection, bias, and attenuation network shown in the interface schematic |
 | GND | Common | Connect only when the chosen radio interface uses a common ground |
 | LED | TX indicator | On while PTT is asserted |
 

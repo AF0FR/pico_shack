@@ -41,6 +41,7 @@ endif()
 add_executable(PicoShack
     src/main.c
     src/audio.c
+    src/dtmf.c
     src/fox.c
     src/keyer.c
     src/morse.c
@@ -64,6 +65,7 @@ target_include_directories(PicoShack PRIVATE
 target_link_libraries(PicoShack PRIVATE
     pico_stdlib
     hardware_clocks
+    hardware_adc
     hardware_flash
     hardware_pwm
     hardware_watchdog

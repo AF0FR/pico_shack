@@ -1,6 +1,7 @@
 #include "pico/stdlib.h"
 
 #include "audio.h"
+#include "dtmf.h"
 #include "fox.h"
 #include "keyer.h"
 #include "radio.h"
@@ -20,12 +21,14 @@ int main(void)
         }
     }
     radio_init();
+    dtmf_init();
     station_control_init();
     audio_init();
 
     sleep_ms(2000);
 
     while (true) {
+        dtmf_poll();
         fox_settings_t settings;
         settings_get(&settings);
         station_control_set_manual_mode(settings.operating_mode == 1u);

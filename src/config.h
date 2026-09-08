@@ -6,6 +6,8 @@
 // Raspberry Pi Pico GPIO assignments.
 #define PTT_PIN   0u
 #define AUDIO_PIN 1u
+#define SPEAKER_INPUT_PIN 26u
+#define SPEAKER_ADC_INPUT 0u
 
 #define DIT_PIN                 2u
 #define DAH_PIN                 3u

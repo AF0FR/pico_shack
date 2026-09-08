@@ -6,6 +6,7 @@
 
 #include "audio.h"
 #include "config.h"
+#include "dtmf.h"
 #include "morse.h"
 #include "settings.h"
 #include "station_control.h"
@@ -74,6 +75,7 @@ void radio_pause_ms(unsigned milliseconds)
     }
     const absolute_time_t deadline = make_timeout_time_ms(milliseconds);
     do {
+        dtmf_poll();
         if (station_control_stop_requested()) {
             fox_settings_t settings;
             settings_get(&settings);
