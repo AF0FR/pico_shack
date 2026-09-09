@@ -26,8 +26,9 @@
 #define DTMF_MIN_FRAME_ENERGY    100000u
 #define DTMF_RECENT_DIGITS            8u
 #define DTMF_TURNAROUND_MS           350u
-#define DTMF_ACK_HZ                  525u
-#define DTMF_ACK_MS                  120u
+#define DTMF_ACK_MS                  500u
+#define DTMF_ACK_SETTLE_MS          1000u
+#define DTMF_ACK_POST_MS            1000u
 #define DTMF_ACK_GAP_MS              100u
 
 typedef enum {
@@ -240,12 +241,19 @@ static bool send_courtesy(unsigned count, bool remain_keyed)
 {
     sleep_ms(DTMF_TURNAROUND_MS);
     if (!radio_ptt_on()) return false;
+    // Allow the radio's transmit audio path to settle before the first beep.
+    // This is additional to the normal PTT lead used by CW.
+    sleep_ms(DTMF_ACK_SETTLE_MS);
+    if (!station_control_transmission_allowed()) {
+        radio_ptt_off();
+        return false;
+    }
     for (unsigned i = 0; i < count; ++i) {
-        audio_start_tone(DTMF_ACK_HZ);
-        sleep_ms(DTMF_ACK_MS);
-        audio_stop();
+        audio_play_tone(COURTESY_TONE_HZ, DTMF_ACK_MS);
         if (i + 1u < count) sleep_ms(DTMF_ACK_GAP_MS);
     }
+    // Keep PTT asserted with silent audio before continuing or unkeying.
+    sleep_ms(DTMF_ACK_POST_MS);
     if (!remain_keyed) radio_ptt_off();
     return true;
 }
@@ -285,6 +293,8 @@ void dtmf_poll(void)
         settings_set(&settings);
         station_control_set_enabled(enabled);
         station_control_set_manual_mode(settings.operating_mode == 1u);
+        // Discard the interrupted cycle, including any one-shot state.
+        fox_request_sequence(false);
         return;
     }
 

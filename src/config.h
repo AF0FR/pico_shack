@@ -13,7 +13,7 @@
 #define DIT_PIN                 2u
 #define DAH_PIN                 3u
 
-// Pico 2 W access point. WPA2 passwords must contain at least 8 characters.
+// Pico W access point. WPA2 passwords must contain at least 8 characters.
 #define WIFI_AP_SSID     "PicoShack"
 #define WIFI_AP_PASSWORD "picoshack1"
 
@@ -23,6 +23,7 @@
 // Morse settings.
 #define CW_WPM     15u
 #define CW_TONE_HZ 500u
+#define COURTESY_TONE_HZ 525u
 #define AUDIO_GAIN_PERCENT 50u
 
 #define OPERATING_MODE_DEFAULT 0u

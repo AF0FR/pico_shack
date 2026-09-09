@@ -15,7 +15,9 @@ static volatile bool web_dah_pressed;
 static void read_keys(const fox_settings_t *s, bool *dit, bool *dah)
 {
     const bool physical_dit = !gpio_get(s->keyer_reversed ? DAH_PIN : DIT_PIN);
-    const bool physical_dah = !gpio_get(s->keyer_reversed ? DIT_PIN : DAH_PIN);
+    // A mono straight-key plug can ground the unused paddle contact.
+    const bool physical_dah = s->keyer_mode != 0u &&
+        !gpio_get(s->keyer_reversed ? DIT_PIN : DAH_PIN);
     *dit = physical_dit || web_dit_pressed;
     *dah = physical_dah || web_dah_pressed;
 }
@@ -113,13 +115,18 @@ void keyer_run(void)
 
     workflow_set(WORKFLOW_KEYER_ACTIVE);
     if (!radio_ptt_on()) return;
-    if (s.keyer_mode == 0u) straight_key(&s); else paddle_key(&s, dit, dah);
+    do {
+        if (s.keyer_mode == 0u) straight_key(&s); else paddle_key(&s, dit, dah);
 
-    const absolute_time_t deadline = make_timeout_time_ms(s.keyer_hang_ms);
-    while (!time_reached(deadline) && station_control_transmission_allowed()) {
-        read_keys(&s, &dit, &dah);
-        if (dit || dah) return;
-        sleep_ms(1);
-    }
+        const absolute_time_t deadline = make_timeout_time_ms(s.keyer_hang_ms);
+        dit = dah = false;
+        while (!time_reached(deadline) && station_control_transmission_allowed()) {
+            read_keys(&s, &dit, &dah);
+            if (dit || dah) break;
+            sleep_ms(1);
+        }
+        // Handle another element here so every keyed path reaches PTT-off,
+        // even if a short press disappears before the next input read.
+    } while ((dit || dah) && station_control_transmission_allowed());
     radio_ptt_off();
 }

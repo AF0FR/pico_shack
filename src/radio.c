@@ -74,12 +74,14 @@ void radio_pause_ms(unsigned milliseconds)
         station_control_stop_requested() || web_reboot_requested()) {
         radio_ptt_off();
     }
-    const absolute_time_t deadline = make_timeout_time_ms(milliseconds);
+    absolute_time_t deadline = make_timeout_time_ms(milliseconds);
     do {
+        const absolute_time_t command_start = get_absolute_time();
         dtmf_poll();
-        if (fox_restart_pending()) {
-            break;
-        }
+        // A command temporarily owns the radio. Its courtesy tone and payload
+        // must not consume the interrupted sequence's remaining pause.
+        deadline = delayed_by_us(deadline,
+            absolute_time_diff_us(command_start, get_absolute_time()));
         if (station_control_stop_requested()) {
             fox_settings_t settings;
             settings_get(&settings);
@@ -89,6 +91,12 @@ void radio_pause_ms(unsigned milliseconds)
             radio_ptt_off();
             station_control_complete_stop();
             workflow_set(WORKFLOW_STOPPED);
+            break;
+        }
+        // Complete a requested stop/ID before unwinding the old sequence.
+        // A reset pending while stopped must not make the idle loop spin.
+        if (fox_restart_pending() && station_control_is_enabled()) {
+            break;
         }
 
         const bool settings_saved = settings_save_if_dirty();

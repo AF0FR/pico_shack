@@ -12,10 +12,10 @@ if (EXISTS ${picoVscode})
     include(${picoVscode})
 endif()
 # ====================================================================================
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.18)
 
 if (NOT DEFINED PICO_BOARD)
-    set(PICO_BOARD pico2_w CACHE STRING "Target board")
+    set(PICO_BOARD pico_w CACHE STRING "Target board")
 endif()
 
 include(pico_sdk_import.cmake)
@@ -30,13 +30,12 @@ pico_sdk_init()
 include(FetchContent)
 FetchContent_Declare(pico_examples
     GIT_REPOSITORY https://github.com/raspberrypi/pico-examples.git
-    GIT_TAG master
+    GIT_TAG sdk-2.3.0
     GIT_SHALLOW TRUE
+    # Use the DHCP/DNS sources without configuring the examples project.
+    SOURCE_SUBDIR picoshack-source-only
 )
-FetchContent_GetProperties(pico_examples)
-if (NOT pico_examples_POPULATED)
-    FetchContent_Populate(pico_examples)
-endif()
+FetchContent_MakeAvailable(pico_examples)
 
 add_executable(PicoShack
     src/main.c

@@ -46,11 +46,8 @@ static void send_character(const char *pattern, uint32_t dit_ms, uint32_t tone_h
         if (!station_control_transmission_allowed()) {
             return;
         }
-        audio_start_tone(tone_hz);
         const uint32_t element_ms = pattern[i] == '-' ? 3u * dit_ms : dit_ms;
-        const uint32_t ramp_ms = 2u * AUDIO_ENVELOPE_MS;
-        sleep_ms(element_ms > ramp_ms ? element_ms - ramp_ms : 0u);
-        audio_stop();
+        audio_play_tone(tone_hz, element_ms);
 
         if (pattern[i + 1] != '\0') {
             sleep_ms(dit_ms);

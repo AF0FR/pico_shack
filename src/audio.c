@@ -26,7 +26,9 @@ static void set_envelope_level(uint16_t scale)
 
 void audio_init(void)
 {
-    gpio_set_function(AUDIO_PIN, GPIO_FUNC_PWM);
+    gpio_init(AUDIO_PIN);
+    gpio_put(AUDIO_PIN, 0);
+    gpio_set_dir(AUDIO_PIN, GPIO_OUT);
     audio_slice = pwm_gpio_to_slice_num(AUDIO_PIN);
     audio_channel = pwm_gpio_to_channel(AUDIO_PIN);
     pwm_set_enabled(audio_slice, false);
@@ -53,6 +55,7 @@ void audio_start_tone(uint32_t frequency_hz)
     pwm_set_wrap(audio_slice, wrap);
     pwm_set_chan_level(audio_slice, audio_channel, 0u);
     pwm_set_counter(audio_slice, 0u);
+    gpio_set_function(AUDIO_PIN, GPIO_FUNC_PWM);
     pwm_set_enabled(audio_slice, true);
     audio_active = true;
     for (uint i = 1u; i <= AUDIO_ENVELOPE_MS; ++i) {
@@ -68,13 +71,32 @@ void audio_stop(void)
             set_envelope_level(envelope[i]);
             sleep_ms(1);
         }
+        // Compare writes are buffered until wrap. Let zero duty take effect
+        // before stopping the counter, even when a tone period exceeds 1 ms.
+        pwm_clear_irq(audio_slice);
+        while (!(pwm_hw->intr & (1u << audio_slice))) {
+            tight_loop_contents();
+        }
+        pwm_clear_irq(audio_slice);
     }
     pwm_set_enabled(audio_slice, false);
-    gpio_set_function(AUDIO_PIN, GPIO_FUNC_SIO);
-    gpio_set_dir(AUDIO_PIN, GPIO_OUT);
+    // Preload SIO low before handing the pin over, and leave it there while
+    // silent rather than reconnecting a potentially stale PWM output.
     gpio_put(AUDIO_PIN, 0);
-    gpio_set_function(AUDIO_PIN, GPIO_FUNC_PWM);
+    gpio_set_dir(AUDIO_PIN, GPIO_OUT);
+    gpio_set_function(AUDIO_PIN, GPIO_FUNC_SIO);
     audio_active = false;
+}
+
+void audio_play_tone(uint32_t frequency_hz, uint32_t duration_ms)
+{
+    if (!station_control_transmission_allowed()) {
+        return;
+    }
+    audio_start_tone(frequency_hz);
+    const uint32_t ramp_ms = 2u * AUDIO_ENVELOPE_MS;
+    sleep_ms(duration_ms > ramp_ms ? duration_ms - ramp_ms : 0u);
+    audio_stop();
 }
 
 void audio_play_warble(void)
